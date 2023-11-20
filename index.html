@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <!-- Sets character encoding to UTF-8 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Ensures responsive design on different devices -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css"
+        integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
+    <!-- Includes Bootstrap for styling -->
+    <script src="https://kit.fontawesome.com/7080cd0a09.js" crossorigin="anonymous"></script>
+    <!-- FontAwesome for icon fonts -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <!-- Vue.js for reactive UI components -->
+    <script src="Courses.js"></script>
+    <!-- Custom JavaScript file -->
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <!-- Custom stylesheet -->
+    <title>CourseWork1</title>
+    <!-- Title of the web page -->
+</head>
+
+<body>
+    <div id="app">
+        <!-- Main container for Vue.js application -->
+        <div class="jumbotron">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-2">
+                        <h2 class="logo"> TheWayTo Education </h2>
+                        <!-- Logo or title of the website -->
+                    </div>
+                    <div class="col-md-6">
+                        <form>
+                            <input type="text" class="form-control" v-model="term" v-on:keyup="searchCourses"
+                                placeholder="Search">
+                            <!-- Search input bound to Vue.js data and methods -->
+                        </form>
+                    </div>
+                    <div class="col-md-4">
+                        <!-- Shopping cart button; visibility controlled by Vue.js -->
+                        <button class="cart-btn btn btn-primary" v-if="cartItemCount === ''" hidden><i
+                                class="fa fa-shopping-cart"></i> Cart {{cartItemCount}}</button>
+                        <!-- Hidden when cart is empty -->
+                        <button class="cart-btn btn btn-primary" v-on:click="showShoppingCartPage()" v-else><i
+                                class="fa fa-shopping-cart"></i> Cart {{cartItemCount}}</button>
+                        <!-- Shows cart item count and opens cart page -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{homepage}}</li>
+                <!-- Breadcrumb navigation -->
+            </ol>
+        </nav>
+        <div class="mt-5">
+            <div v-if="showProduct">
+                <!-- Container for products; shown based on Vue.js conditional -->
+                <h2 class="text-center mt-5 mb-5"></h2>
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-2">
+                            <aside>
+                                <h6>Sort By</h6>
+                                <!-- Sorting options for products -->
+                                <div class="custom-control custom-radio">
+                                    <input type="radio" id="subject" v-model="sort.sortingMethod" value="subject"
+                                        name="" class="custom-control-input">
+                                    <label class="custom-control-label" for="subject">Subject</label>
+                                </div>
+                                <div class="custom-control custom-radio">
+                                    <input type="radio" id="location" v-model="sort.sortingMethod" value="location"
+                                        name="" class="custom-control-input">
+                                    <label class="custom-control-label" for="location">Location</label>
+                                </div>
+                                <div class="custom-control custom-radio mb-1">
+                                    <input type="radio" id="price" v-model="sort.sortingMethod" value="price" name=""
+                                        class="custom-control-input">
+                                    <label class="custom-control-label" for="price">Price</label>
+                                </div>
+                                <div class="custom-control custom-radio mb-1">
+                                    <input type="radio" id="availability" v-model="sort.sortingMethod"
+                                        value="availability" name="" class="custom-control-input">
+                                    <label class="custom-control-label" for="availability">Availability</label>
+                                </div>
+                                <h6 class="mt-4">Order By</h6>
+                                <!-- Order by ascending or descending -->
+                                <div class="custom-control custom-radio mb-1">
+                                    <input type="radio" id="ascending" v-model="sort.sortingOrder" value="ascending"
+                                        name="" class="custom-control-input">
+                                    <label class="custom-control-label" for="ascending">Ascending</label>
+                                </div>
+                                <div class="custom-control custom-radio mb-1">
+                                    <input type="radio" id="descending" v-model="sort.sortingOrder" value="descending"
+                                        name="" class="custom-control-input">
+                                    <label class="custom-control-label" for="descending">Descending</label>
+                                </div>
+                            </aside>
+                        </div>
+                        <div class="col-md-10 row">
+                            <!-- Displays lesson items -->
+                            <div v-for="lesson in sortedCourses" class="col-md-4">
+                                <div class="card mb-4">
+                                    <img class="card-img" v-bind:src="lesson.image" alt="Lesson Image">
+                                    <!-- Lesson image -->
+                                    <div class="card-body">
+                                        <h6>Subject: {{lesson.subject}}</h6>
+                                        <h6>Location: {{lesson.location}}</h6>
+                                        <h6>Available: {{lesson.availablespace - cartCount(lesson)}}</h6>
+                                        <h6>Price: £{{lesson.price}}</h6>
+                                        <h6>Rating:
+                                            <span v-for='n in lesson.rating'><i class="fas fa-star"></i></span>
+                                            <span v-for='n in 5 - lesson.rating'><i class="far fa-star"></i></span>
+                                            <!-- Star rating display -->
+                                        </h6>
+                                        <button v-on:click="addToCart(lesson)" v-if="canAddToCart(lesson)"
+                                            class="btn btn-primary">Add to Cart</button>
+                                        <!-- Add to cart button, enabled based on availability -->
+                                        <button class="btn btn-primary"
+                                            v-else="lesson.availablespace === cartCount(lesson.id)"
+                                            v-bind:disabled="!canAddToCart(lesson)">Add to Cart</button>
+                                        <!-- Disabled add to cart button if not available -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-else>
+                <!-- Section for displaying items in the shopping cart -->
+                <h2 class="text-center mt-5 mb-5">{{cartpage}}</h2>
+                <!-- Title for the cart page, data-bound to Vue.js property -->
+                <div class="container">
+                    <div class="row">
+                        <!-- Loop through each item in the cart array -->
+                        <div v-for="lesson in cart" class="col-md-3 mb-4">
+                            <!-- Card component for each cart item -->
+                            <div class="card">
+                                <!-- Dynamic image source for each lesson -->
+                                <img class="card-img" v-bind:src="lesson.image" alt="Lesson Image">
+                                <div class="card-body">
+                                    <!-- Display lesson details -->
+                                    <h6>Subject: {{lesson.subject}}</h6>
+                                    <h6>Location: {{lesson.location}}</h6>
+                                    <h6>Price: £{{lesson.price}}</h6>
+                                    <!-- Button to remove item from cart -->
+                                    <button v-on:click="removeFromCart(lesson, cart)" class="btn btn-primary">Remove from Cart</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Checkout section -->
+                    <h2 class="text-center mt-5 mb-5">Checkout</h2>
+                    <form class="mb-5">
+                        <div class="form-row">
+                            <!-- Input fields for user information -->
+                            <div class="col">
+                                <input type="text" class="form-control" v-model="user.name" placeholder="Enter Name" required>
+                            </div>
+                            <div class="col">
+                                <input type="text" class="form-control" v-model="user.phone" placeholder="Phone Number" required>
+                            </div>
+                            <!-- Submission button, visible only when user input is valid -->
+                            <input style="margin-bottom: 50px;" v-on:click="submitForm(user)"
+                                   v-if="user.name == '' || user.number == '' " class="btn btn-primary" type="submit"
+                                   value="Place Order" hidden>
+                            <!-- Warning message for invalid name input -->
+                            <p v-else-if="user.name == parseInt(user.name) " class="bg-danger"> Please input a valid name</p>
+                            <!-- Submit button when inputs are valid -->
+                            <input style="margin-bottom: 50px;" v-on:click="submitForm(user)" v-else
+                                   class="btn btn-primary" type="submit" value="Place Order">
+                        </div>
+                    </form>
+                </div>
+                <!-- End of cart items and checkout UI -->
+            </div>
+            
+        </div>
+    </div>
+
+    <script>
+        // Initialize Vue.js application
+        var vm = new Vue({
+            el: "#app", // Connect Vue instance to the DOM element with id 'app'
+            data: {
+                // Data properties for the Vue instance
+                homepage: 'Browse Courses', // Title for homepage
+                cartpage: 'Shopping Cart', // Title for the shopping cart page
+                showProduct: true, // Boolean to toggle between product view and cart view
+                term: '', // Search term
+                user: { // User details object
+                    name: '', // User's name
+                    phone: '', // User's phone number
+                },
+                Courses: Courses, // Array of Courses (presumably loaded from 'Courses.js')
+                cart: [], // Array to store items added to the cart
+                sort: { // Sorting criteria
+                    sortingMethod: "location", // Initial sorting method
+                    sortingOrder: "ascending", // Initial sorting order
+                },
+            },
+            methods: {
+                // Method to add a product to the cart
+                addToCart: function (lesson) {
+                    this.cart.push(lesson);
+                },
+                // Method to remove a product from the cart
+                removeFromCart: function (lesson, cart) {
+                    this.cart.splice(this.cart.indexOf(lesson), 1);
+                },
+                // Method to check if a product can be added to the cart
+                canAddToCart(lesson) {
+                    return lesson.availablespace > this.cartCount(lesson);
+                },
+                // Method to count the number of a specific product in the cart
+                cartCount(id) {
+                    let count = 0;
+                    for (let i = 0; i < this.cart.length; i++) {
+                        if (this.cart[i] === id) {
+                            count++;
+                        }
+                    }
+                    return count;
+                },
+                // Method to toggle between product view and cart view
+                showShoppingCartPage: function () {
+                    this.showProduct = !this.showProduct;
+                },
+                // Method to filter Courses based on the search term
+                searchCourses: function () {
+                    this.Courses = Courses.filter(lesson => lesson.subject.toLowerCase().includes(this.term.toLowerCase()) || lesson.location.toLowerCase().includes(this.term.toLowerCase()));
+                },
+                // Method to handle form submission
+                submitForm(user) {
+                    alert('Cheers ' + user.name + ', your order has been successfully submitted');
+                },
+            },
+            computed: {
+                // Computed property to get the count of cart items
+                cartItemCount: function () {
+                    return this.cart.length || "";
+                },
+                // Computed property to get sorted Courses based on selected criteria
+                sortedCourses(Courses, sort) {
+                    //the comparison that defines the order
+                    //
+
+                    if (this.sort.sortingMethod == "location" && this.sort.sortingOrder === "ascending") {
+                        function compare(a, b) {
+                            if (a.location > b.location) return 1;
+                            if (a.location < b.location) return -1;
+                            return 0;
+                        }
+
+                    } else if (this.sort.sortingMethod == "location" && this.sort.sortingOrder === "descending") {
+                        function compare(a, b) {
+                            if (a.location < b.location) return 1;
+                            if (a.location > b.location) return -1;
+                            return 0;
+                        }
+                    } else if (this.sort.sortingMethod === "price" && this.sort.sortingOrder === "ascending") {
+                        function compare(a, b) {
+                            if (a.price > b.price) return 1;
+                            if (a.price < b.price) return -1;
+                            return 0;
+                        }
+                    } else if (this.sort.sortingMethod === "price" && this.sort.sortingOrder === "descending") {
+                        function compare(a, b) {
+                            if (a.price < b.price) return 1;
+                            if (a.price > b.price) return -1;
+                            return 0;
+                        }
+                    } else if (this.sort.sortingMethod == "subject" && this.sort.sortingOrder === "ascending") {
+                        function compare(a, b) {
+                            if (a.subject > b.subject) return 1;
+                            if (a.subject < b.subject) return -1;
+                            return 0;
+                        }
+                    } else if (this.sort.sortingMethod == "subject" && this.sort.sortingOrder === "descending") {
+                        function compare(a, b) {
+                            if (a.subject < b.subject) return 1;
+                            if (a.subject > b.subject) return -1;
+                            return 0;
+                        }
+                    } else if (this.sort.sortingMethod == "availability" && this.sort.sortingOrder === "ascending") {
+                        
+                        function compare(a, b) {
+                            if (a.availablespace > b.availablespace) return 1;
+                            if (a.availablespace < b.availablespace) return -1;
+                            return 0;
+                        }
+                    } else if (this.sort.sortingMethod == "availability" && this.sort.sortingOrder === "descending") {
+                        
+                        function compare(a, b) {
+                            if (a.availablespace < b.availablespace) return 1;
+                            if (a.availablespace > b.availablespace) return -1;
+                            return 0;
+                        }
+                    }
+                    //sort 'productArray' array and return it
+                    return this.Courses.sort(compare);
+                },
+            }
+        })
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>
